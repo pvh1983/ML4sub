@@ -6,20 +6,27 @@ from datetime import datetime
 import os
 import plotly.express as px
 
-# Notes: Using conda env irp
-# cd c:\Users\hpham\Documents\P25_InSAR_Pahrump\python\
+# Notes: Using conda env irp on local PC
+# cd c:\Users\hpham\Documents\P31 Maki\ML4sub\
 
+cur_dir = os.getcwd()  # get the current working directory
 
-ifile_ls = r'C:\Users\hpham\Documents\P25_InSAR_Pahrump\27_las2agu_new\mintpy\ts_ls_all_points.csv'
+# Specify an input file that has the time series of subsidence velocity
+# at groundwater level observation wells
+ifile_ls = cur_dir + '\ts_ls_all_points.csv'
 df0 = pd.read_csv(ifile_ls)
+
+# Specify the path to time series groundwater level data (csv file, one file for one well)
 path_gw = r'c:/Users/hpham/Documents/P25_InSAR_Pahrump/gwlevels/'
+# Get the list of groundwater level observation wells
 logs = os.listdir(path_gw)
 
-
+# Define some plotting parameters
 font_size = 16
 msize = 6
 lwidth = 0.75
 
+# Specify the time to plot
 start_date = pd.Timestamp(dt.date(2014, 1, 1))
 end_date = pd.Timestamp(dt.date(2019, 12, 31))
 df_dt = pd.DataFrame({'Date': [start_date, end_date], 'Val': [999, 999]})
