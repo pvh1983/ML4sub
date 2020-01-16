@@ -6,62 +6,71 @@ from datetime import datetime
 import os
 import plotly.express as px
 
+'''
 # Notes: Using conda env irp on local PC
-# cd c:\Users\hpham\Documents\P31 Maki\ML4sub\
+
+# input data ------------------------------------------------------------------
+# [1] A DataFrame of time series subsidence velocity at given points (i.e., 
+#     gwlevel observation locations)
+# [2] A DataFrame of time series gwlevels at observation locations
+
+'''
+
 
 cur_dir = os.getcwd()  # get the current working directory
 
-# Specify an input file that has the time series of subsidence velocity
+sampling_freq = 'M'
+
+# [1] Specify an input file that has the time series of subsidence velocity
 # at groundwater level observation wells
-ifile_ls = cur_dir + '\ts_ls_all_points.csv'
+ifile_ls = r'../data/ts_ls_all_points.csv'
 df0 = pd.read_csv(ifile_ls)
+df0['Date'] = pd.to_datetime(df0['Date'])
+# resample to monthly data
+dfs = df0.resample(sampling_freq, on='Date').mean()
+dfs = df0.reset_index()
 
-# Specify the path to time series groundwater level data (csv file, one file for one well)
-path_gw = r'c:/Users/hpham/Documents/P25_InSAR_Pahrump/gwlevels/'
+
+# [2] Specify the path to time series groundwater level data
+# (csv files, one file for one well) - Combine to one file later
+ifile_gwlevel = r'../data/gwlevels__freq_M.csv'
+dfgw = pd.read_csv(ifile_gwlevel)
+dfgw['Date'] = pd.to_datetime(dfgw['Date'])
 # Get the list of groundwater level observation wells
-logs = os.listdir(path_gw)
+logs = list(dfgw.columns)
+logs.remove('Date')
 
-# Define some plotting parameters
+
+# [3] Define some plotting parameters
 font_size = 16
 msize = 6
 lwidth = 0.75
-
 # Specify the time to plot
-start_date = pd.Timestamp(dt.date(2014, 1, 1))
+start_date = pd.Timestamp(dt.date(2005, 1, 1))
 end_date = pd.Timestamp(dt.date(2019, 12, 31))
 df_dt = pd.DataFrame({'Date': [start_date, end_date], 'Val': [999, 999]})
 df_dt['Date'] = pd.to_datetime(df_dt['Date'])
-df_date = df_dt.resample('Q', on='Date').mean()   # resample by month
+df_date = df_dt.resample(sampling_freq, on='Date').mean()   # resample by month
 df_date = df_date.reset_index()
 df_date = df_date.drop('Val', 1)
 
-
-for f in logs:  # logs[0:1]:
-    line = f.split('.')
-    loc_name = str(line[0])
-    print(f'Name = {loc_name} \n')
-    ifile_gw = path_gw + loc_name + '.csv'
-
-    dfgw = pd.read_csv(ifile_gw)
-    dfgw['Date'] = pd.to_datetime(dfgw['Date'])
-
-    dfgw = dfgw.rename(columns={'hobs ': loc_name})
-    # resample to monthly/quaterly data
-#    dfgw = dfgw.resample('M', on='Date').mean()
-#    dfgw = dfgw.reset_index()
-#    print(f'size dfgw = {dfgw.shape}')
-
-    #dfgw['Date'] = pd.to_datetime(df['Date'])
-    dfgw = dfgw[dfgw['Date'] > start_date]
-
-    print(f'size dfgw = {dfgw.shape}')
-
+# [4] Trim data
+dfgw = dfgw[dfgw['Date'] > start_date]
 #    row_to_drop = range(0, 117, 1)
 #    dfgw = dfgw.drop(row_to_drop)
-    dfgw = dfgw.reset_index()
-    dfgw['Date'] = pd.to_datetime(dfgw['Date'])
+dfgw = dfgw.reset_index()
+#
 
-    col_to_plot = [loc_name]
+dfgw = dfgw[dfgw['Date'] > start_date]
+
+# [5] Create a new folder to save the figures
+odir = '../output/head_vs_ls/'
+if not os.path.exists(odir):  # Make a new directory if not exist
+    os.makedirs(odir)
+    print(f'\nCreated directory {odir}\n')
+
+for loc_name in logs:  # logs[0:1]:
+    print(f'size dfgw = {dfgw.shape}')
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 5))
 
@@ -69,9 +78,6 @@ for f in logs:  # logs[0:1]:
     col_keep = ['Date', loc_name]
     df = df0[col_keep]
     df['Date'] = pd.to_datetime(df['Date'])
-    # resample to monthly data
-    df = df.resample('Q', on='Date').mean()
-    df = df.reset_index()
 
     plt.grid(color='#e6e6e6', linestyle='-', linewidth=0.5, axis='both')
 
@@ -129,7 +135,7 @@ for f in logs:  # logs[0:1]:
     labs = [l.get_label() for l in p]
     ax.legend(p, labs, loc="upper right")
 
-    ofile = 'head vs ls ' + loc_name + '.png'
+    ofile = odir + 'head_vs_ls_' + loc_name + '.png'
     print(f'Saving map to ... {ofile[-60:]} \n')
     fig.savefig(ofile, dpi=150, transparent=False, bbox_inches='tight')
     # plt.show()
