@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
 
-def MapPlotPV(domain_coor='', plot_background=False, df='', ofile='', vmin=0, vmax=10, legend_name=''):
+def MapPlotPV(domain_coor='', showbg=False, show_wsb=False, df='',
+              var='', ofile='', vmin=0, vmax=10, legend_name=''):
     xmin, xmax, ymin, ymax = domain_coor  # NV
     s_size = 12
     s_edgewidth = 0.1
@@ -31,36 +32,34 @@ def MapPlotPV(domain_coor='', plot_background=False, df='', ofile='', vmin=0, vm
     # m.bluemarble(scale=0.2)   # full scale will be overkill
     # Plot BACKGROUND =========================================================
 
-    if plot_background == True:
-        #        m.arcgisimage(service='ESRI_Imagery_World_2D',
-        #                      xpixels=1500, ypixel=None, dpi=300, verbose=True, alpha=1)  # Background
+    if showbg == True:
+        # World_Shaded_Relief, ESRI_Imagery_World_2D, World_Imagery,
         m.arcgisimage(service='World_Shaded_Relief',
                       xpixels=1500, dpi=300, verbose=True, alpha=0.25)  # Background
-
+        # More maps at http://server.arcgisonline.com/arcgis/rest/services
     # Watershed
-    m.readshapefile('/scratch/hpham/shp/WBDHU12', name='NAME',
-                    color='#bfbfbf', linewidth=0.25, drawbounds=True)
+    show_wsb = True
+    if show_wsb:
+        m.readshapefile('../input/shp/WBDHU12', name='NAME',
+                        color='#bfbfbf', linewidth=0.25, drawbounds=True)
 
     # road layer
-    m.readshapefile('/scratch/hpham/shp/tl_2016_us_primaryroads', name='NAME',
-                    color='#a52a2a', linewidth=0.5, drawbounds=True)
+    show_road = True
+    if show_road:
+        m.readshapefile('../input/shp/tl_2016_us_primaryroads',
+                        name='NAME', color='#a52a2a', linewidth=0.5, drawbounds=True)
 
-    # Plot variance at well locations ==========================================
+    # Plot well_depth =========================================================
     #x, y = [df["Lon"].values, df["Lat"].values]
-    z_value = df.std_hed
+    z_value = df[var]
     #vmin = min(z_value)
     #vmax = max(z_value)
 
-#    x, y = map(df["Lat"], df["Long"])
-#    print(f'x={x}, y={y}')
-
-#    plt1 = plt.scatter(x, y, edgecolors=s_color, color='k',
-#                s=s_size, linewidth=s_width, alpha=1)
-
-    x, y = m(df["longitude"].values, df["latitude"].values)  # transform coordinates
+    # transform coordinates
+    x, y = m(df["longitude"].values, df["latitude"].values)
 
     plt1 = plt.scatter(x, y, c=z_value, vmin=vmin, vmax=vmax,
-                       edgecolors='k', s=z_value*5,
+                       edgecolors='k', s=z_value/25,
                        linewidth=s_edgewidth, cmap=cmap, alpha=1)
 
     # Legend
@@ -72,16 +71,13 @@ def MapPlotPV(domain_coor='', plot_background=False, df='', ofile='', vmin=0, vm
                         extend='both', extendfrac='auto', cax=cbar_ax)
     cbar.set_label(legend_name, labelpad=0, y=0.08, rotation=0)
 
-
 #    ax.set_title('One standard deviation of simulated heads')
-
     # m.drawcountries(linewidth=1.0)
     # m.drawcoastlines(linewidth=.5)
 
-    #ofile = 'LS_' + 'TS' + str(ts).rjust(2, '0') + '.png'
-    #ofile = 'map_stdv_of_cal_hed.png'
     fig.savefig(ofile, dpi=300, transparent=False, bbox_inches='tight')
     # plt.show()
+
 
 def MapPlotLS(filepath, ts, date_aqui, years, gps_file, domain_coor, vmin, vmax, c_map, ti):
 
@@ -135,8 +131,8 @@ def MapPlotLS(filepath, ts, date_aqui, years, gps_file, domain_coor, vmin, vmax,
     # xx, yy = convertXY(xy_source, inproj, outproj)
 
     # Plot BACKGROUND =========================================================
-    plot_background = False
-    if plot_background == True:
+    showbg = False
+    if showbg == True:
         #        m.arcgisimage(service='ESRI_Imagery_World_2D',
         #                      xpixels=1500, ypixel=None, dpi=300, verbose=True, alpha=1)  # Background
         m.arcgisimage(service='World_Shaded_Relief',
@@ -239,3 +235,24 @@ def plot_2D_LS(if1, if2, dtime_ifile, lb):
         ax1.legend(loc='upper right')
         print(f'Saving {ofile}')
         fig.savefig(ofile, dpi=150, transparent=False, bbox_inches='tight')
+
+# More background map
+# https://kbkb-wx-python.blogspot.com/2016/04/python-basemap-background-image-from.html
+
+
+'''
+map_list = [
+'ESRI_Imagery_World_2D',    # 0
+'ESRI_StreetMap_World_2D',  # 1
+'NatGeo_World_Map',         # 2
+'NGS_Topo_US_2D',           # 3
+#'Ocean_Basemap',            # 4
+'USA_Topo_Maps',            # 5
+'World_Imagery',            # 6
+'World_Physical_Map',       # 7     Still blurry
+'World_Shaded_Relief',      # 8
+'World_Street_Map',         # 9
+'World_Terrain_Base',       # 10
+'World_Topo_Map'            # 11
+]
+'''

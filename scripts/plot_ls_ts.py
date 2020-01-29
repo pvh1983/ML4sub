@@ -23,7 +23,7 @@ sampling_freq = 'M'
 
 # [1] Specify an input file that has the time series of subsidence velocity
 # at groundwater level observation wells
-ifile_ls = r'../data/ts_ls_all_points.csv'
+ifile_ls = r'../input/ts_ls_all_points.csv'
 df0 = pd.read_csv(ifile_ls)
 df0['Date'] = pd.to_datetime(df0['Date'])
 # resample to monthly data
@@ -33,7 +33,7 @@ dfs = df0.reset_index()
 
 # [2] Specify the path to time series groundwater level data
 # (csv files, one file for one well) - Combine to one file later
-ifile_gwlevel = r'../data/gwlevels__freq_M.csv'
+ifile_gwlevel = r'../input/gwlevels__freq_M.csv'
 dfgw = pd.read_csv(ifile_gwlevel)
 dfgw['Date'] = pd.to_datetime(dfgw['Date'])
 # Get the list of groundwater level observation wells
