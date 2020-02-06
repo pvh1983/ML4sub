@@ -19,7 +19,7 @@ The main script of ML4sub
 [3] Build geologic structures using process_well_logs.py
     - Map boreholes, lithology
     - Build 3-D lithologic models    
-[4] Calculate subsidence trends
+[4] Calculate subsidence trends using plot_ls_ts.py
 
 
 """
