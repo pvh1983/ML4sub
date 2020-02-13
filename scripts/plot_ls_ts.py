@@ -9,10 +9,11 @@ from func4stat import *
 
 '''
 # Notes: Using conda env irp on local PC
+# Plot time series of ls and gwlevels
 
 # input data ------------------------------------------------------------------
 # [1] A DataFrame of time series subsidence velocity at given points (i.e., 
-#     gwlevel observation locations)
+#     gwlevel observation locations). Run main_sar.py after done mintpy
 # [2] A DataFrame of time series gwlevels at observation locations
 
 '''
@@ -24,11 +25,12 @@ opt_plot_ls_vs_head = True
 opt_cal_trend = False
 
 # Define domain and satellite
-domain = 'pv'    # 'pv' or 'las'
-sat = 'alos'   # 'alos' or 'sen'
+domain = 'pv_las'    # 'pv' or 'las' or 'pv_las' (for sentinel)
+sat = 'sen'   # 'alos' or 'sen'
+
 # Specify the time to plot
 cur_dir = os.getcwd()  # get the current working directory
-sampling_freq = 'M'  # Note: Check freq of gwlevel at line 48.
+sampling_freq = 'M'    # Note: Check freq of gwlevel at line 48
 start_date = pd.Timestamp(dt.date(2005, 1, 1))
 end_date = pd.Timestamp(dt.date(2019, 12, 31))
 df_date = gen_date_time_series(start_date, end_date, sampling_freq)
