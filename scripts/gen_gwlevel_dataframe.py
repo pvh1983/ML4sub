@@ -23,13 +23,19 @@ cur_dir = os.getcwd()  # get the current working directory
 
 # Specify the path to time series groundwater level data
 # (csv files, one file for one well)
+
 # Only folder, data up to 2015
-path_gw = r'c:/Users/hpham/Documents/P25_InSAR_Pahrump/gwlevels/'
+#path_gw = r'c:/Users/hpham/Documents/P25_InSAR_Pahrump/gwlevels/'
+
+# Updated 2019 gwlevel data
+path_gw = r'../output/raw_gwlevels/'
+
+
 # Get the list of groundwater level observation wells
 logs = os.listdir(path_gw)
 
 # Specify the time to plot
-start_date = pd.Timestamp(dt.date(2005, 1, 1))
+start_date = pd.Timestamp(dt.date(1930, 1, 1))
 end_date = pd.Timestamp(dt.date(2019, 12, 31))
 sampling_freq = 'M'
 df_dt = pd.DataFrame({'Date': [start_date, end_date], 'Val': [999, 999]})
@@ -49,7 +55,8 @@ for f in logs:  # logs[0:1]:
     dfgw = pd.read_csv(ifile_gw)
     dfgw['Date'] = pd.to_datetime(dfgw['Date'])
 
-    dfgw = dfgw.rename(columns={'hobs ': loc_name})
+    # be careful with space 'hobs ' vs 'hobs'
+    dfgw = dfgw.rename(columns={'hobs': loc_name})
     # resample to monthly/quaterly data
     dfgw = dfgw.resample(sampling_freq, on='Date').mean()
     dfgw = dfgw.reset_index()
@@ -70,6 +77,6 @@ for f in logs:  # logs[0:1]:
     dfgw['Date'] = pd.to_datetime(dfgw['Date'])
     '''
 
-ofile = '../data/' + 'gwlevels_' + '_freq_' + sampling_freq + '.csv'
+ofile = '../output/gwlevel_cleanup_' + sampling_freq + '_2019.csv'
 df_final.to_csv(ofile, index=False)
 print(f'The output dataframe was saved at {ofile} \n')
