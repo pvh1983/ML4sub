@@ -23,6 +23,7 @@ cur_dir = os.getcwd()  # get the current working directory
 
 # Specify the path to time series groundwater level data
 # (csv files, one file for one well)
+# Only folder, data up to 2015
 path_gw = r'c:/Users/hpham/Documents/P25_InSAR_Pahrump/gwlevels/'
 # Get the list of groundwater level observation wells
 logs = os.listdir(path_gw)
