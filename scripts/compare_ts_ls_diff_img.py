@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 import os
 
 '''
-Compare the results from two runs for the descending path and the ascending path
+Compare the results from diffent runs/satellits: (1) ALOS, (2) SENTINEL-1 ascending/descending paths
 
 '''
+
+# cd c:\Users\hpham\Documents\P31 Maki\ML4sub\scripts\
 
 
 def read_input_file(ifile, sampling_freq):
@@ -18,63 +20,76 @@ def read_input_file(ifile, sampling_freq):
     return df
 
 
-# Define several input parameters
-sampling_freq = 'Q'
-
-ifile = [r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_dsc.csv',
-         r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_dsc.csv']
-
-'''
-ifile1 = r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_dsc.csv'
-df1 = read_input_file(ifile1, sampling_freq)
-
-ifile2 = r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_dsc.csv'
-df2 = read_input_file(ifile2, sampling_freq)
-
-ifile1 = r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_dsc.csv'
-df1 = pd.read_csv(ifile1)
-df1['Date'] = pd.to_datetime(df1['Date'])
-df1 = df1.resample(sampling_freq, on='Date').mean()
-df1 = df1.reset_index()
-df1['Date'] = pd.to_datetime(df1['Date'])
+def get_list_of_points(p0):
+    p0 = 'p046_074'
+    irow = int(p0[1:4])
+    icol = int(p0[5:8])
+    # Get four points around p0
+    id_rows = [irow-1, irow, irow+1]
+    id_cols = [icol-1, icol, icol+1]
+    pname = []
+    for j in id_cols:
+        pname_cur = 'p'+str(irow).rjust(3, '0') + '_' + str(j).rjust(3, '0')
+        if pname_cur not in pname:
+            pname.append(pname_cur)
+    for i in id_rows:
+        pname_cur = 'p'+str(i).rjust(3, '0') + '_' + str(icol).rjust(3, '0')
+        if pname_cur not in pname:
+            pname.append(pname_cur)
+    return pname
 
 
-ifile2 = r'../input/ts_ls_at_well_logs/ts_ls_at_well_logs_sen_asc.csv'
-df2 = pd.read_csv(ifile2)
-df2['Date'] = pd.to_datetime(df2['Date'])
-df2 = df2.resample(sampling_freq, on='Date').mean()
-df2 = df2.reset_index()
-df2['Date'] = pd.to_datetime(df2['Date'])
-'''
+    # Define several input parameters
+sampling_freq = 'M'
 
-for i, f in enumerate(ifile):
+ifile = [
+    r'../input/ts_ls_at_well_logs/v02_02202020/ts_ls_at_well_logs_sen_asc_run4_NOPE.csv',
+    r'../input/ts_ls_at_well_logs/v02_02202020/ts_ls_at_well_logs_sen_asc_run5_ASHM.csv',
+    #         r'../input/ts_ls_at_well_logs/v02_02202020/ts_ls_at_well_logs_sen_dsc_run1.csv',
+    r'../input/ts_ls_at_well_logs/v02_02202020/ts_ls_at_well_logs_sen_dsc_ASHM_run4.csv',
+]
 
-    wname = list(df2.columns)
-    wname.remove('Date')
 
-    # Make a new dir
-    odir = '../output/compare_ls_ts/'
-    if not os.path.exists(odir):  # Make a new directory if not exist
-        os.makedirs(odir)
-        print(f'\nCreated directory {odir}\n')
+# Make a new dir
+odir = '../output/compare_ls_ts_freq_' + sampling_freq + '/'
+if not os.path.exists(odir):  # Make a new directory if not exist
+    os.makedirs(odir)
+    print(f'\nCreated directory {odir}\n')
 
-    for i, wn in enumerate(wname):
-        # Compare the time series of subsidence for diff data sets (asc vs dsc)
-        fig, ax = plt.subplots()
-        fig.set_size_inches(8, 6.5)
+
+df = read_input_file(ifile[0], sampling_freq)
+wname = list(df.columns)
+wname.remove('Date')
+
+wname = [{'LaComb Irrigation Well': 'p046_074'},
+         {'Ruins Well': 'p044_069'}]
+
+cur_point = wname[1]['Ruins Well']
+list_of_points = get_list_of_points(cur_point)
+for i, wn in enumerate(wname[:300]):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(6, 4)
+    plt.grid(color='#e6e6e6', linestyle='-', linewidth=0.5, axis='both')
+    for j, f in enumerate(ifile):
+        df = read_input_file(f, sampling_freq)
 
         # Plot 1
-        y1 = df1[wn]
-        x1 = df1['Date']
-        p1 = ax.plot(x1, y1, '-o')
-
-        # Plot 2
-        y2 = df2[wn]
-        x2 = df2['Date']
-        p2 = ax.plot(x2, y2, '-s')
-        ax.legend(['Ascending', 'Descending'])
-
-        plt.title(wn)
-        ofile = odir + str(i+1).rjust(4, '0') + '_' + wn + '.png'
-        fig.savefig(ofile, dpi=100, transparent=False, bbox_inches='tight')
-        plt.close("all")
+        cols = ['Date', wn]
+        dfi = df[cols]
+        dfi = dfi.dropna(subset=cols)
+        y1 = dfi[wn]
+        x1 = dfi['Date']
+        p1 = ax.plot(x1, y1, '-o', MarkerSize=1.5, alpha=0.8)
+    ax.set_ylabel('LOS Displacement (cm)', color='k')
+    ax.set_ylim([-5, 5])
+    ax.legend([
+        #           'Ascending run 2',
+        'Asc4 NOPE',
+        'Asc5 ASHM',
+        #           #               'Descending run 1',
+        'Dsc4 ASHM',
+    ])
+    plt.title(wn)
+    ofile = odir + str(i+1).rjust(4, '0') + '_' + wn + '.png'
+    fig.savefig(ofile, dpi=150, transparent=False, bbox_inches='tight')
+    plt.close("all")
