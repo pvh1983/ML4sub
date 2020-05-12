@@ -14,8 +14,9 @@ def gen_date_time_series(start_date, end_date, sampling_freq):
     return df_date
 
 
-def read_input(ifile_ts_ls, ifile_gwlevel, sampling_freq, start_date, opt_del_empty_cell):
-    print(f'Reading time-series file for LS: {ifile_ts_ls}\n')
+def read_input(ifile, sampling_freq, start_date, opt_del_empty_cell):
+    print(f'Reading time-series file for LS: {ifile}\n')
+    '''
     df0 = pd.read_csv(ifile_ts_ls)
     df0['Date'] = pd.to_datetime(df0['Date'])
     # resample to monthly data
@@ -23,21 +24,24 @@ def read_input(ifile_ts_ls, ifile_gwlevel, sampling_freq, start_date, opt_del_em
     df0 = df0.reset_index()
     df0['Date'] = pd.to_datetime(df0['Date'])
 
-    print(f'Reading time-series file for GWLevel: {ifile_gwlevel}\n')
-    dfgw = pd.read_csv(ifile_gwlevel)
-    dfgw['Date'] = pd.to_datetime(dfgw['Date'])
+    print(f'Reading time-series file for GWLevel: {ifile}\n')
+    '''
+    df = pd.read_csv(ifile)
+    df['Date'] = pd.to_datetime(df['Date'])
     # resample to monthly data
-    dfgw = dfgw.resample(sampling_freq, on='Date').mean()
-    dfgw = dfgw.reset_index()
+    df = df.resample(sampling_freq, on='Date').mean()
+    df = df.reset_index()
 
-    dfgw = dfgw[dfgw['Date'] > start_date]
+    df = df[df['Date'] > start_date]
 #    row_to_drop = range(0, 117, 1)
-#    dfgw = dfgw.drop(row_to_drop)
-    dfgw = dfgw.reset_index()
-    dfgw['Date'] = pd.to_datetime(dfgw['Date'])
+#    df = df.drop(row_to_drop)
+    df = df.reset_index()
+    df['Date'] = pd.to_datetime(df['Date'])
+    if opt_del_empty_cell:
+        df['Date'] = pd.to_datetime(df['Date'])
 
     print(f'Done reading the imput files and resampling data \n')
-    return df0, dfgw
+    return df
 
 
 def EstimateTrend(df, dfout, wname, npoints):
